@@ -1,0 +1,57 @@
+>> Task 1:
+
+```
+import requests
+
+    # Replace <pancakeSwap_address> and <your_api_key> with actual values
+    url = "https://bscscan.com/api?module=account&action=tokentx&address=<pancakeSwap_address>&sort=asc&apikey=<your_api_key>"
+
+    response = requests.get(url)
+    data = response.json()
+
+    bep20_tokens = []
+    for tx in data["result"]:
+        if tx["contractAddress"] not in [token["contractAddress"] for token in bep20_tokens]:
+            bep20_tokens.append({"name": tx["tokenName"], "contractAddress": tx["contractAddress"]})
+
+    print(bep20_tokens)
+```
+
+
+
+>> Task 2: 
+
+```
+import json
+
+    # Replace <pancakeSwap_address> and <your_api_key> with actual values
+    url = "https://bscscan.com/api?module=account&action=tokentx&address=<pancakeSwap_address>&sort=asc&apikey=<your_api_key>"
+
+    response = requests.get(url)
+    data = response.json()
+
+    # Fetch USD value of BNB and BUSD
+    bnb_usd_url = "https://api.coingecko.com/api/v3/simple/price?ids=binance-coin&vs_currencies=usd"
+    busd_usd_url = "https://api.coingecko.com/api/v3/simple/price?ids=binance-usd&vs_currencies=usd"
+    bnb_usd_response = requests.get(bnb_usd_url)
+    busd_usd_response = requests.get(busd_usd_url)
+    bnb_usd_data = bnb_usd_response.json()
+    busd_usd_data = busd_usd_response.json()
+    bnb_usd_value = bnb_usd_data["binance-coin"]["usd"]
+    busd_usd_value = busd_usd_data["binance-usd"]["usd"]
+
+    buy_sell_data = []
+    for tx in data["result"]:
+        if tx["tokenSymbol"] in ["BNB", "BUSD"]:
+            if tx["tokenSymbol"] == "BNB":
+                usd_value = bnb_usd_value * float(tx["value"])
+            else:
+                usd_value = busd_usd_value * float(tx["value"])
+            buy_sell_data.append({"Transaction Time": tx["timeStamp"], 
+                                  "Token": tx["tokenSymbol"], 
+                                  "Amount": tx["value"], 
+                                  "Transaction amount in USD": usd_value,
+                                  "Initiate address": tx["from"]})
+
+    print(json.dumps(buy_sell_data))
+```
